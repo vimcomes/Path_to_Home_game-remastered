@@ -1,11 +1,12 @@
 #include "Fuel.h"
+#include <cstdlib>
 
-Fuel::Fuel(String name, int x, int y)
+Fuel::Fuel(const sf::String& name, int x, int y)
 {
 	// Initialize texture and scale so the canister roughly matches meteor size
 	TextureObject.loadFromFile(name);
 	SpaceObject.setTexture(TextureObject);
-	SpaceObject.setTextureRect(IntRect(0, 0, x, y));
+	SpaceObject.setTextureRect(sf::IntRect(0, 0, x, y));
 	int scal = 1000 / x;
 	baseScale = 0.05f * scal;
 	SpaceObject.setScale(baseScale, baseScale);
@@ -25,17 +26,17 @@ void Fuel::restart()
 	float x = static_cast<float>(rand() % 1280 + 1280);
 	float y = static_cast<float>(rand() % 540 + 130);
 
-	SpaceObject.setPosition(Vector2f(x, y));
+	SpaceObject.setPosition(sf::Vector2f(x, y));
 	PosBonus = SpaceObject.getPosition();
 	updateScaleFromAmount();
 	if (type == BonusType::Shield)
 	{
-		SpaceObject.setColor(Color(120, 240, 255, 240));
+		SpaceObject.setColor(sf::Color(120, 240, 255, 240));
 		spinSpeed = static_cast<float>((rand() % 101) - 50);
 	}
 	else
 	{
-		SpaceObject.setColor(Color::White);
+		SpaceObject.setColor(sf::Color::White);
 		spinSpeed = static_cast<float>((rand() % 121) - 60);
 	}
 }

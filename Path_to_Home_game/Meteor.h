@@ -1,6 +1,5 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-using namespace sf;
 
 class Meteor
 {
@@ -9,22 +8,22 @@ public:
 	~Meteor(); // destructor;
 
 	void move(float delta); // move meteor across the screen with time delta
-	void draw(RenderWindow& window); // render meteor sprite
+	void draw(sf::RenderWindow& window); // render meteor sprite
 	void animation(); // animate meteor texture if enabled
-	bool collision(FloatRect object); // collision check with arbitrary rect
+	bool collision(sf::FloatRect object); // collision check with arbitrary rect
 	virtual void restart(); // respawn off-screen with random size/position
-	const FloatRect getMeteorBounds(); // bounds in global coords
+	const sf::FloatRect getMeteorBounds(); // bounds in global coords
 	bool newborn; // true when the meteor was just respawned
 
-	Vector2f getPosBonus()
+	sf::Vector2f getPosBonus()
 	{
 		return PosBonus;
 	}
 
 protected:
-	Sprite SpaceObject; // meteor object
-	Texture TextureObject; // meteor texure
-	Vector2f PosBonus;
+	sf::Sprite SpaceObject; // meteor object
+	sf::Texture TextureObject; // meteor texure
+	sf::Vector2f PosBonus;
 	float spinSpeed = 0.f; // deg/sec
 private:
 

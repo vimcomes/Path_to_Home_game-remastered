@@ -1,11 +1,12 @@
 #include "Meteor.h"
+#include <cstdlib>
 
 
 Meteor::Meteor()
 {
 	TextureObject.loadFromFile("Image/asteroid.png");
 	SpaceObject.setTexture(TextureObject);
-	SpaceObject.setTextureRect(IntRect(262, 325, 55, 50));
+	SpaceObject.setTextureRect(sf::IntRect(262, 325, 55, 50));
 	restart(); // pick initial random spawn
 }
 
@@ -25,7 +26,7 @@ void Meteor::move(float delta)
 	if (SpaceObject.getPosition().x < -60) restart();
 }
 
-void Meteor::draw(RenderWindow& window) 
+void Meteor::draw(sf::RenderWindow& window) 
 {
 	window.draw(SpaceObject);
 }
@@ -35,7 +36,7 @@ void Meteor::animation()
 	// step through sprite sheet grid when animation is enabled
 	if (st > 0)
 	{
-		SpaceObject.setTextureRect(IntRect(xsp[ix], ysp[iy], 50,45));
+		SpaceObject.setTextureRect(sf::IntRect(xsp[ix], ysp[iy], 50,45));
 		ix += st;
 		if (ix > 4) 
 		{
@@ -45,7 +46,7 @@ void Meteor::animation()
 	}
 }
 
-bool Meteor::collision(FloatRect object)
+bool Meteor::collision(sf::FloatRect object)
 {
 	if (SpaceObject.getGlobalBounds().intersects(object)) return true;
 	return false;
@@ -64,7 +65,7 @@ void Meteor::restart()
 	float x = static_cast<float>(rand() % 1280 + 1280);
 	float y = static_cast<float>(rand() % 540 + 130);
 
-	SpaceObject.setPosition(Vector2f(x, y));
+	SpaceObject.setPosition(sf::Vector2f(x, y));
 	SpaceObject.setScale(s/20, s/20);
 	ix = rand() % 4;
 	iy = rand() % 5;
@@ -73,7 +74,7 @@ void Meteor::restart()
 	PosBonus = SpaceObject.getPosition();
 }
 
-const FloatRect Meteor::getMeteorBounds()
+const sf::FloatRect Meteor::getMeteorBounds()
 {
 	return SpaceObject.getGlobalBounds();
 }

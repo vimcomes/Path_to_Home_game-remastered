@@ -1,29 +1,26 @@
 cmake_minimum_required(VERSION 3.20)
 project(Path_to_Home_game LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Path_to_Home_game)
 
-set(GAME_SOURCES
-    ${SRC_DIR}/main.cpp
-    ${SRC_DIR}/Meteor.cpp
-    ${SRC_DIR}/Fuel.cpp
-    ${SRC_DIR}/worklibgamer.cpp
+add_executable(path_to_home)
+target_sources(path_to_home
+    PRIVATE
+        ${SRC_DIR}/main.cpp
+        ${SRC_DIR}/Game.cpp
+        ${SRC_DIR}/Meteor.cpp
+        ${SRC_DIR}/Fuel.cpp
+        ${SRC_DIR}/worklibgamer.cpp
+        ${SRC_DIR}/Game.h
+        ${SRC_DIR}/GameState.h
+        ${SRC_DIR}/Meteor.h
+        ${SRC_DIR}/Fuel.h
+        ${SRC_DIR}/worklibgamer.h
 )
-
-set(GAME_HEADERS
-    ${SRC_DIR}/Meteor.h
-    ${SRC_DIR}/Fuel.h
-    ${SRC_DIR}/worklibgamer.h
-)
-
-add_executable(path_to_home ${GAME_SOURCES} ${GAME_HEADERS})
 target_include_directories(path_to_home PRIVATE ${SRC_DIR})
+target_compile_features(path_to_home PRIVATE cxx_std_20)
 
 set(SFML_REQUIRED_COMPONENTS system window graphics audio)
 set(SFML_MIN_VERSION 2.5)

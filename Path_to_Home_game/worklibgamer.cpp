@@ -1,10 +1,10 @@
 #include "worklibgamer.h"
 
-void PlayerMove(Sprite& player, Vector2f moveRec)
+void PlayerMove(sf::Sprite& player, sf::Vector2f moveRec)
 {
     // Move with current velocity then clamp to on-screen bounds
     player.move(moveRec);
-    Vector2f pos = player.getPosition();
+    sf::Vector2f pos = player.getPosition();
     if (pos.x > 1200) player.setPosition(1200, pos.y);
     if (pos.x < 50) player.setPosition(50, pos.y);
     if (pos.y > 660) player.setPosition(pos.x, 660);
@@ -16,11 +16,11 @@ void PlayerMove(Sprite& player, Vector2f moveRec)
     if ((pos.y < 50) && (pos.y > 660)) player.setPosition(50, 660);
 }
 
-void playeranim(Sprite& player, FrameAnim& FramePlAnim, int traffic)
+void playeranim(sf::Sprite& player, game::FrameAnim& FramePlAnim, int traffic)
 {
     // Cycle through sprite sheet rows depending on whether ship is moving
     FramePlAnim.Frame += FramePlAnim.Step;
-    player.setTextureRect(IntRect(0,FramePlAnim.Frame, 90,90));
+    player.setTextureRect(sf::IntRect(0, FramePlAnim.Frame, 90, 90));
     if (traffic) if (FramePlAnim.Frame > 0) FramePlAnim.Step = -100;
     else FramePlAnim.Step = 0;
     else
@@ -38,7 +38,9 @@ void Correct(Fuel& canister, int i, Meteor* meteor, int nmeteor)
         if (i1 != i) {
             if (meteor[i1].collision(meteor[i].getMeteorBounds()))
             {
-                meteor[i].restart(); Correct(canister, i, meteor, nmeteor); break;
+                meteor[i].restart();
+                Correct(canister, i, meteor, nmeteor);
+                break;
             }
         }
     }
@@ -56,20 +58,22 @@ void CorrectFuel(Fuel& canister, Meteor* meteor, int nmeteor)
     {
         if (meteor[i1].collision(canister.getMeteorBounds()))
             {
-                canister.restart(); CorrectFuel(canister, meteor, nmeteor); break;
+                canister.restart();
+                CorrectFuel(canister, meteor, nmeteor);
+                break;
             }
         }
     }
 
-FloatRect ShrinkRect(const FloatRect& rect, float ratio)
+sf::FloatRect ShrinkRect(const sf::FloatRect& rect, float ratio)
 {
     // Reduce bounds uniformly on each side by given fraction (0..0.5)
     float insetX = rect.width * ratio;
     float insetY = rect.height * ratio;
-    return FloatRect(rect.left + insetX, rect.top + insetY, rect.width - 2 * insetX, rect.height - 2 * insetY);
+    return sf::FloatRect(rect.left + insetX, rect.top + insetY, rect.width - 2 * insetX, rect.height - 2 * insetY);
 }
 
-string IntToStr(int number)
+std::string IntToStr(int number)
 {
     std::ostringstream TextString;
     TextString << number;
