@@ -1,0 +1,23 @@
+.idea/
+cmake-build-*/
+build/
+
+CMakeFiles/
+CMakeCache.txt
+*.ninja
+*.ninja_deps
+*.ninja_log
+cmake_install.cmake
+
+# Object and library artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+
+# CLion/CLion-generated helper files
+*.iml
+.DS_Store
