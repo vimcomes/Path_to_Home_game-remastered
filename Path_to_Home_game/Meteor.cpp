@@ -6,7 +6,7 @@ Meteor::Meteor()
 	TextureObject.loadFromFile("Image/asteroid.png");
 	SpaceObject.setTexture(TextureObject);
 	SpaceObject.setTextureRect(IntRect(262, 325, 55, 50));
-	restart();
+	restart(); // pick initial random spawn
 }
 
 Meteor::~Meteor()
@@ -14,10 +14,13 @@ Meteor::~Meteor()
 
 }
 
-void Meteor::move(float& time)
+void Meteor::move(float delta)
 {
+	// drift left; respawn when off-screen to recycle objects
 	newborn = false;
-	SpaceObject.move(static_cast<float>(-0.5*time),0);
+	const float meteorSpeed = 160.f;
+	SpaceObject.move(-meteorSpeed * delta,0);
+	if (spinSpeed != 0.f) SpaceObject.rotate(spinSpeed * delta);
 	PosBonus = SpaceObject.getPosition();
 	if (SpaceObject.getPosition().x < -60) restart();
 }
@@ -29,6 +32,7 @@ void Meteor::draw(RenderWindow& window)
 
 void Meteor::animation()
 {
+	// step through sprite sheet grid when animation is enabled
 	if (st > 0)
 	{
 		SpaceObject.setTextureRect(IntRect(xsp[ix], ysp[iy], 50,45));
@@ -49,8 +53,14 @@ bool Meteor::collision(FloatRect object)
 
 void Meteor::restart()
 {
+	// Respawn meteor to the right side with random scale and animation offsets
 	newborn = true;
-	float s = static_cast<float>(rand() % 20 + 10);
+	// Смещаем распределение в сторону мелких объектов для разнообразия
+	int roll = rand() % 100;
+	float s = 0.f;
+	if (roll < 55)      s = static_cast<float>(rand() % 12 + 6);   // мелкие
+	else if (roll < 85) s = static_cast<float>(rand() % 12 + 14);  // средние
+	else                s = static_cast<float>(rand() % 10 + 24);  // крупные
 	float x = static_cast<float>(rand() % 1280 + 1280);
 	float y = static_cast<float>(rand() % 540 + 130);
 
@@ -58,7 +68,8 @@ void Meteor::restart()
 	SpaceObject.setScale(s/20, s/20);
 	ix = rand() % 4;
 	iy = rand() % 5;
-	st = rand() % 2;
+	st = 1 + rand() % 2;
+	spinSpeed = static_cast<float>((rand() % 121) - 60); // -60..60 deg/sec
 	PosBonus = SpaceObject.getPosition();
 }
 

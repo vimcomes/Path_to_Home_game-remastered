@@ -8,13 +8,13 @@ public:
 	Meteor(); // constructor
 	~Meteor(); // destructor;
 
-	void move(float& time); // meteor move
-	void draw(RenderWindow& window); // meteor draw
-	void animation(); // meteor animation
-	bool collision(FloatRect object); //meteor collision
-	virtual void restart(); // set new coords
-	const FloatRect getMeteorBounds(); // position in global coords
-	bool newborn;
+	void move(float delta); // move meteor across the screen with time delta
+	void draw(RenderWindow& window); // render meteor sprite
+	void animation(); // animate meteor texture if enabled
+	bool collision(FloatRect object); // collision check with arbitrary rect
+	virtual void restart(); // respawn off-screen with random size/position
+	const FloatRect getMeteorBounds(); // bounds in global coords
+	bool newborn; // true when the meteor was just respawned
 
 	Vector2f getPosBonus()
 	{
@@ -25,6 +25,7 @@ protected:
 	Sprite SpaceObject; // meteor object
 	Texture TextureObject; // meteor texure
 	Vector2f PosBonus;
+	float spinSpeed = 0.f; // deg/sec
 private:
 
 
@@ -34,4 +35,3 @@ private:
 	int ix, iy = 0; // offsets by x, y
 	int st = 0; // animation step
 };
-

@@ -2,6 +2,7 @@
 
 void PlayerMove(Sprite& player, Vector2f moveRec)
 {
+    // Move with current velocity then clamp to on-screen bounds
     player.move(moveRec);
     Vector2f pos = player.getPosition();
     if (pos.x > 1200) player.setPosition(1200, pos.y);
@@ -17,6 +18,7 @@ void PlayerMove(Sprite& player, Vector2f moveRec)
 
 void playeranim(Sprite& player, FrameAnim& FramePlAnim, int traffic)
 {
+    // Cycle through sprite sheet rows depending on whether ship is moving
     FramePlAnim.Frame += FramePlAnim.Step;
     player.setTextureRect(IntRect(0,FramePlAnim.Frame, 90,90));
     if (traffic) if (FramePlAnim.Frame > 0) FramePlAnim.Step = -100;
@@ -30,6 +32,7 @@ void playeranim(Sprite& player, FrameAnim& FramePlAnim, int traffic)
 
 void Correct(Fuel& canister, int i, Meteor* meteor, int nmeteor)
 {
+    // If a meteor overlaps another object right after spawn, respawn it recursively
     for (int i1 = 0; i1 < nmeteor; i1++)
     {
         if (i1 != i) {
@@ -48,6 +51,7 @@ void Correct(Fuel& canister, int i, Meteor* meteor, int nmeteor)
 
 void CorrectFuel(Fuel& canister, Meteor* meteor, int nmeteor)
 {
+    // Keep fuel from spawning directly on top of meteors
     for (int i1 = 0; i1 < nmeteor; i1++)
     {
         if (meteor[i1].collision(canister.getMeteorBounds()))
@@ -57,9 +61,17 @@ void CorrectFuel(Fuel& canister, Meteor* meteor, int nmeteor)
         }
     }
 
+FloatRect ShrinkRect(const FloatRect& rect, float ratio)
+{
+    // Reduce bounds uniformly on each side by given fraction (0..0.5)
+    float insetX = rect.width * ratio;
+    float insetY = rect.height * ratio;
+    return FloatRect(rect.left + insetX, rect.top + insetY, rect.width - 2 * insetX, rect.height - 2 * insetY);
+}
+
 string IntToStr(int number)
 {
-    ostringstream TextString;
+    std::ostringstream TextString;
     TextString << number;
     return TextString.str();
 }
