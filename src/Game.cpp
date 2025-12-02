@@ -249,9 +249,10 @@ void Game::update(float dt) {
     if (state.gamePause)
         return;
 
-    if (hud.progressX() <= hud.progressEnd()) {
+    if (!state.victoryPlayed && hud.progressX() < hud.progressEnd()) {
         updateGameplay(dt);
     } else {
+        setVictoryIfReached();
         if (animTextClock.getElapsedTime() > sf::seconds(20))
             window.close();
     }
@@ -431,10 +432,10 @@ void Game::checkCollisions() {
 void Game::render() {
     if (state.gamePause) {
         renderPause();
-    } else if (hud.progressX() <= hud.progressEnd()) {
-        renderGameplay();
-    } else {
+    } else if (state.victoryPlayed) {
         renderVictory();
+    } else {
+        renderGameplay();
     }
 }
 
