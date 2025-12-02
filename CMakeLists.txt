@@ -3,7 +3,8 @@ project(Path_to_Home_game LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Path_to_Home_game)
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 
 add_executable(path_to_home)
 target_sources(path_to_home
@@ -12,11 +13,17 @@ target_sources(path_to_home
         ${SRC_DIR}/Game.cpp
         ${SRC_DIR}/Meteor.cpp
         ${SRC_DIR}/Fuel.cpp
+        ${SRC_DIR}/ParticleSystem.cpp
         ${SRC_DIR}/worklibgamer.cpp
+        ${SRC_DIR}/Hud.cpp
+        ${SRC_DIR}/ResourcePaths.cpp
         ${SRC_DIR}/Game.h
         ${SRC_DIR}/GameState.h
         ${SRC_DIR}/Meteor.h
         ${SRC_DIR}/Fuel.h
+        ${SRC_DIR}/ParticleSystem.h
+        ${SRC_DIR}/Hud.h
+        ${SRC_DIR}/ResourcePaths.h
         ${SRC_DIR}/worklibgamer.h
 )
 target_include_directories(path_to_home PRIVATE ${SRC_DIR})
@@ -54,10 +61,12 @@ endif()
 
 target_link_libraries(path_to_home PRIVATE sfml-graphics sfml-window sfml-system sfml-audio)
 
-set(ASSET_DIRS Font Image Music)
-foreach(dir ${ASSET_DIRS})
-    add_custom_command(TARGET path_to_home POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${SRC_DIR}/${dir}
-        $<TARGET_FILE_DIR:path_to_home>/${dir})
-endforeach()
+add_custom_command(TARGET path_to_home POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${RES_DIR}
+    $<TARGET_FILE_DIR:path_to_home>/resources)
+
+add_custom_command(TARGET path_to_home POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.toml
+    $<TARGET_FILE_DIR:path_to_home>/config.toml)

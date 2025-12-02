@@ -2,7 +2,6 @@
 
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
-#include <vector>
 
 namespace game
 {
@@ -13,21 +12,6 @@ struct FrameAnim
     int Step = 100;
     int Frame1 = 0;
     int Step1 = 100;
-};
-
-struct SmokeParticle
-{
-    sf::Vector2f pos;
-    float lifetime = 0.f;
-    float ttl = 0.f;
-    float size = 0.f;
-};
-
-struct PickupFlash
-{
-    sf::Vector2f pos;
-    float lifetime = 0.f;
-    float ttl = 0.f;
 };
 
 struct GameState
@@ -50,8 +34,6 @@ struct GameState
     int traffic = 0;
     FrameAnim playerAnim{700, 100, 0, 100};
     FrameAnim destructAnim{5, 100, 15, 100};
-    std::vector<SmokeParticle> smoke;
-    std::vector<PickupFlash> flashes;
 };
 
 struct Config
@@ -77,12 +59,6 @@ struct Resources
     sf::SoundBuffer sbFail, sbBonusM, sbBonusB, sbVictory;
 };
 
-struct HudSprites
-{
-    std::vector<sf::Sprite> lifeIcons;
-};
-
 constexpr int Nmeteor = 15;
 
 } // namespace game
-

@@ -1,0 +1,16 @@
+[player]
+speed = 260.0
+
+[background]
+speed = 72.0
+speed_far = 180.0
+
+[progress]
+speed = 1.25
+
+[fuel]
+max = 220.0
+drain_per_second = 12.5
+
+[shield]
+duration = 6.0

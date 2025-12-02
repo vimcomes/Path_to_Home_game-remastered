@@ -1,10 +1,11 @@
 #include "Meteor.h"
+#include "ResourcePaths.h"
 #include <cstdlib>
 
 
 Meteor::Meteor()
 {
-	TextureObject.loadFromFile("Image/asteroid.png");
+	TextureObject.loadFromFile(resourcePath("images/asteroid.png"));
 	SpaceObject.setTexture(TextureObject);
 	SpaceObject.setTextureRect(sf::IntRect(262, 325, 55, 50));
 	restart(); // pick initial random spawn

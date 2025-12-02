@@ -8,12 +8,18 @@ Cross-platform CMake/SFML (C++20) version of “Path to Home”, adapted from th
 - Rotating asteroids/bonuses, smoke/flashes, parallax background.
 - Cleaned resources/constants (`Resources`, `Config`, `GameState`) for easy tuning; core loop wrapped in a `Game` class.
 
-## Build
+## Build & Run
 ```bash
 cmake -S . -B cmake-build-debug
 cmake --build cmake-build-debug
 ./cmake-build-debug/bin/path_to_home
 ```
+Resources are copied to `cmake-build-debug/bin/resources` automatically after build. Configurable gameplay values live in `config.toml` (loaded at startup; defaults apply if missing).
+
+### Project layout
+- `src/` — C++20 sources/headers.
+- `resources/` — assets (`images/`, `audio/`, `fonts/`), copied next to the binary post-build.
+- `config.toml` — speeds/fuel/shield/progress tuning.
 
 ### Dependencies
 - CMake ≥ 3.20
