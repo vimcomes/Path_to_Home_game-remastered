@@ -18,6 +18,21 @@ cmake_install.cmake
 *.dll
 *.dylib
 
+# Editor swap/backup files
+*.swp
+*.swo
+*~
+
+# Qt Creator / other IDEs
+*.creator
+*.user
+*.autosave
+
+# Build artifacts
+compile_commands.json
+.directory
+.cache/
+
 # CLion/CLion-generated helper files
 *.iml
 .DS_Store
