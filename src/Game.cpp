@@ -4,6 +4,7 @@
 #include "Meteor.h"
 #include "ParticleSystem.h"
 #include "ResourcePaths.h"
+#include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cctype>
