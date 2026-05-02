@@ -4,8 +4,8 @@
 class Meteor
 {
 public:
-	Meteor(); // constructor
-	~Meteor(); // destructor;
+	Meteor();
+	virtual ~Meteor();
 
 	void move(float delta); // move meteor across the screen with time delta
 	void draw(sf::RenderWindow& window); // render meteor sprite

@@ -4,12 +4,9 @@
 #include "Meteor.h"
 #include "ParticleSystem.h"
 #include "ResourcePaths.h"
-#include "worklibgamer.h"
 #include <algorithm>
 #include <cmath>
 #include <cctype>
-#include <cstdlib>
-#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
@@ -17,10 +14,84 @@
 #include <string_view>
 #include <unordered_map>
 
+namespace {
+
+void PlayerMove(sf::Sprite& player, sf::Vector2f moveRec) {
+    player.move(moveRec);
+    sf::Vector2f pos = player.getPosition();
+    using namespace game::constants;
+    if (pos.x > PlayerClampRight)
+        player.setPosition(PlayerClampRight, pos.y);
+    if (pos.x < PlayerClampLeft)
+        player.setPosition(PlayerClampLeft, pos.y);
+    if (pos.y > PlayerClampBottom)
+        player.setPosition(pos.x, PlayerClampBottom);
+    if (pos.y < PlayerClampTop)
+        player.setPosition(pos.x, PlayerClampTop);
+}
+
+void playeranim(sf::Sprite& player, game::FrameAnim& FramePlAnim, int traffic) {
+    FramePlAnim.Frame += FramePlAnim.Step;
+    player.setTextureRect(sf::IntRect(0, FramePlAnim.Frame, 90, 90));
+    if (traffic) {
+        if (FramePlAnim.Frame > 0)
+            FramePlAnim.Step = -100;
+        else
+            FramePlAnim.Step = 0;
+    } else {
+        if (FramePlAnim.Frame == 800)
+            FramePlAnim.Step = 0;
+        if (FramePlAnim.Frame <= 700)
+            FramePlAnim.Step = 100;
+    }
+}
+
+void Correct(Fuel& canister, int i, Meteor* meteor, int nmeteor) {
+    for (int attempts = 0; attempts < 20; ++attempts) {
+        bool overlap = false;
+        for (int i1 = 0; i1 < nmeteor; ++i1) {
+            if (i1 != i && meteor[i1].collision(meteor[i].getMeteorBounds())) {
+                meteor[i].restart();
+                overlap = true;
+                break;
+            }
+        }
+        if (!overlap && !canister.collision(meteor[i].getMeteorBounds()))
+            return;
+        if (!overlap)
+            meteor[i].restart();
+    }
+}
+
+void CorrectFuel(Fuel& canister, Meteor* meteor, int nmeteor) {
+    for (int attempts = 0; attempts < 20; ++attempts) {
+        bool overlap = false;
+        for (int i1 = 0; i1 < nmeteor; ++i1) {
+            if (meteor[i1].collision(canister.getMeteorBounds())) {
+                canister.restart();
+                overlap = true;
+                break;
+            }
+        }
+        if (!overlap)
+            return;
+    }
+}
+
+sf::FloatRect ShrinkRect(const sf::FloatRect& rect, float ratio) {
+    const float clamped = std::min(ratio, 0.49f);
+    float insetX = rect.width * clamped;
+    float insetY = rect.height * clamped;
+    return sf::FloatRect(rect.left + insetX, rect.top + insetY,
+                         rect.width - 2.f * insetX, rect.height - 2.f * insetY);
+}
+
+} // anonymous namespace
+
 Game::Game()
-    : window(sf::VideoMode(1280, 720), "Path to home")
+    : window(sf::VideoMode(static_cast<unsigned>(game::constants::WindowWidth),
+                            static_cast<unsigned>(game::constants::WindowHeight)), "Path to home")
       , canister(resourcePath("images/galon.png"), 1000, 1000) {
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
     initResources();
     initWindowIcon();
     initAudio();
@@ -126,7 +197,7 @@ void Game::loadConfig() {
             double val = std::stod(std::string(valStr));
             std::string fullKey = currentSection.empty() ? key : currentSection + "." + key;
             values[fullKey] = val;
-        } catch (...) {
+        } catch (const std::exception&) {
             continue;
         }
     }
@@ -148,26 +219,27 @@ void Game::loadConfig() {
 }
 
 void Game::initBackground() {
-    gamingBackground = sf::RectangleShape(sf::Vector2f(1280.f, 720.f));
+    using namespace game::constants;
+    gamingBackground = sf::RectangleShape(sf::Vector2f(WindowWidth, WindowHeight));
     gamingBackground.setTexture(&res.background);
     gamingBackground.setFillColor(sf::Color(255, 255, 255, 162));
-    gamingBackground2 = sf::RectangleShape(sf::Vector2f(1280.f, 720.f));
+    gamingBackground2 = sf::RectangleShape(sf::Vector2f(WindowWidth, WindowHeight));
     gamingBackground2.setTexture(&res.background);
     gamingBackground2.setFillColor(sf::Color(255, 255, 255, 162));
-    gamingBackground2.setPosition(sf::Vector2f(1280.f, 0.f));
+    gamingBackground2.setPosition(sf::Vector2f(WindowWidth, 0.f));
 
-    bgFar1 = sf::RectangleShape(sf::Vector2f(1280.f, 720.f));
+    bgFar1 = sf::RectangleShape(sf::Vector2f(WindowWidth, WindowHeight));
     bgFar1.setTexture(&res.background);
     bgFar1.setFillColor(sf::Color(255, 255, 255, 255));
-    bgFar2 = sf::RectangleShape(sf::Vector2f(1280.f, 720.f));
+    bgFar2 = sf::RectangleShape(sf::Vector2f(WindowWidth, WindowHeight));
     bgFar2.setTexture(&res.background);
-    bgFar2.setPosition(sf::Vector2f(1280.f, 0.f));
+    bgFar2.setPosition(sf::Vector2f(WindowWidth, 0.f));
     bgFar2.setFillColor(sf::Color(255, 255, 255, 255));
 
-    pauseOverlay = sf::RectangleShape(sf::Vector2f(1280.f, 720.f));
+    pauseOverlay = sf::RectangleShape(sf::Vector2f(WindowWidth, WindowHeight));
     pauseOverlay.setFillColor(sf::Color(0, 0, 0, 160));
 
-    vignette = sf::RectangleShape(sf::Vector2f(1280.f, 720.f));
+    vignette = sf::RectangleShape(sf::Vector2f(WindowWidth, WindowHeight));
     vignette.setFillColor(sf::Color(0, 0, 0, 35));
 
     earth = sf::RectangleShape(sf::Vector2f(500.f, 500.f));
@@ -179,7 +251,7 @@ void Game::initPlayer() {
     player.setTexture(res.player);
     player.setTextureRect(sf::IntRect(0, state.playerAnim.Frame, 90, 90));
     player.setScale(0.7f, 0.7f);
-    player.setPosition(sf::Vector2f(80.f, 380.f));
+    player.setPosition(sf::Vector2f(game::constants::PlayerStartX, game::constants::PlayerStartY));
 
     destruction.setTexture(res.explosion);
     destruction.setTextureRect(sf::IntRect(5, 15, 95, 80));
@@ -204,6 +276,17 @@ void Game::initTexts() {
     winSub.setCharacterSize(28);
     winSub.setString(L"You successfully got home.");
     winSub.setPosition(360.f, 320.f);
+
+    finalGameOverMsg.setFont(res.font);
+    finalGameOverMsg.setCharacterSize(80);
+    finalGameOverMsg.setFillColor(sf::Color::Red);
+    finalGameOverMsg.setString(L"GAME OVER");
+    finalGameOverMsg.setPosition(380.f, 280.f);
+    finalGameOverHint.setFont(res.font);
+    finalGameOverHint.setCharacterSize(30);
+    finalGameOverHint.setFillColor(sf::Color::White);
+    finalGameOverHint.setString(L"Press any key to restart");
+    finalGameOverHint.setPosition(400.f, 380.f);
 }
 
 void Game::handleEvents() {
@@ -212,6 +295,10 @@ void Game::handleEvents() {
         if (event.type == sf::Event::Closed)
             window.close();
         if (event.type == sf::Event::KeyPressed) {
+            if (state.gameOverFinal) {
+                restartGame();
+                return;
+            }
             if (event.key.code == sf::Keyboard::P)
                 state.gamePause = !state.gamePause;
             if (event.key.code == sf::Keyboard::End)
@@ -297,9 +384,9 @@ void Game::updateGameplay(float dt) {
             sf::FloatRect pb = player.getGlobalBounds();
             particles.emitSmoke(
                 sf::Vector2f(
-                    pb.left + pb.width * 0.18f + static_cast<float>(std::rand() % 4 - 2),
-                    pb.top + pb.height * 0.50f + static_cast<float>(std::rand() % 4 - 2)),
-                6.f + static_cast<float>(std::rand() % 5),
+                    pb.left + pb.width * 0.18f + game::randomFloat(-2.f, 1.f),
+                    pb.top + pb.height * 0.50f + game::randomFloat(-2.f, 1.f)),
+                6.f + static_cast<float>(game::randomInt(0, 4)),
                 0.45f);
         }
     }
@@ -333,7 +420,8 @@ void Game::handleGameOverAnimation() {
         }
         if (state.destructAnim.Frame1 > 415) {
             state.gameOver = false;
-            player.setPosition(sf::Vector2f(80.f, 380.f));
+            state.gameOverFinal = state.lives <= 0;
+            player.setPosition(sf::Vector2f(game::constants::PlayerStartX, game::constants::PlayerStartY));
             for (auto& m : meteors)
                 m.restart();
             canister.restart();
@@ -344,9 +432,6 @@ void Game::handleGameOverAnimation() {
             state.shieldActive = false;
             state.shieldTimer = 0.f;
             state.victoryPlayed = false;
-            if (state.lives <= 0) {
-                showFinalGameOver();
-            }
         } else {
             destruction.setTextureRect(
                 sf::IntRect(state.destructAnim.Frame, state.destructAnim.Frame1, 95, 80));
@@ -355,23 +440,24 @@ void Game::handleGameOverAnimation() {
 }
 
 void Game::updateBackground(float dt) {
+    const float w = game::constants::WindowWidth;
     bgFar1.move(-cfg.backgroundSpeedFar * dt, 0.f);
     sf::Vector2f pos = bgFar1.getPosition();
-    if (pos.x < -1280)
-        bgFar1.setPosition(1280.f, pos.y);
+    if (pos.x < -w)
+        bgFar1.setPosition(w, pos.y);
     bgFar2.move(-cfg.backgroundSpeedFar * dt, 0.f);
     pos = bgFar2.getPosition();
-    if (pos.x < -1280)
-        bgFar2.setPosition(1280.f, pos.y);
+    if (pos.x < -w)
+        bgFar2.setPosition(w, pos.y);
 
     gamingBackground.move(-cfg.backgroundSpeed * dt, 0.f);
     pos = gamingBackground.getPosition();
-    if (pos.x < -1280)
-        gamingBackground.setPosition(1280.f, pos.y);
+    if (pos.x < -w)
+        gamingBackground.setPosition(w, pos.y);
     gamingBackground2.move(-cfg.backgroundSpeed * dt, 0.f);
     pos = gamingBackground2.getPosition();
-    if (pos.x < -1280)
-        gamingBackground2.setPosition(1280.f, pos.y);
+    if (pos.x < -w)
+        gamingBackground2.setPosition(w, pos.y);
 
     hud.moveProgress(cfg.progressSpeed * dt);
 }
@@ -381,8 +467,7 @@ void Game::checkCollisions() {
 
     for (std::size_t i = 0; i < meteors.size(); ++i) {
         if (meteors[i].newborn)
-            Correct(canister, static_cast<int>(i), meteors.data(),
-                    static_cast<int>(meteors.size()));
+            Correct(canister, static_cast<int>(i), meteors.data(), static_cast<int>(meteors.size()));
         meteors[i].move(state.deltaSeconds);
         sf::FloatRect meteorHitbox = ShrinkRect(meteors[i].getMeteorBounds(), 0.12f);
         if (meteorHitbox.intersects(playerHitbox)) {
@@ -421,7 +506,7 @@ void Game::checkCollisions() {
                 bonusBigSound.play();
             else
                 bonusSmallSound.play();
-            hud.setFuelGainAmountText(IntToStr(static_cast<int>(state.fuelGain)));
+            hud.setFuelGainAmountText(std::to_string(static_cast<int>(state.fuelGain)));
             state.pusk = 40;
         }
         canister.restart();
@@ -430,7 +515,9 @@ void Game::checkCollisions() {
 }
 
 void Game::render() {
-    if (state.gamePause) {
+    if (state.gameOverFinal) {
+        renderFinalGameOver();
+    } else if (state.gamePause) {
         renderPause();
     } else if (state.victoryPlayed) {
         renderVictory();
@@ -444,8 +531,8 @@ void Game::renderGameplay() {
     sf::View view = baseView;
     if (state.shakeTimer > 0.f) {
         float strength = 6.f * (state.shakeTimer / 0.35f);
-        float ox = (static_cast<float>(std::rand() % 200) / 100.f - 1.f) * strength;
-        float oy = (static_cast<float>(std::rand() % 200) / 100.f - 1.f) * strength;
+        float ox = game::randomFloat(-1.f, 1.f) * strength;
+        float oy = game::randomFloat(-1.f, 1.f) * strength;
         view.move(ox, oy);
     }
     window.setView(view);
@@ -473,7 +560,7 @@ void Game::renderGameplay() {
     canister.draw(window);
     hud.drawFuelGain(window, state.pusk);
     if (state.flashTimer > 0.f) {
-        sf::RectangleShape flash(sf::Vector2f(1280.f, 720.f));
+        sf::RectangleShape flash(sf::Vector2f(game::constants::WindowWidth, game::constants::WindowHeight));
         flash.setFillColor(sf::Color(255, 255, 255,
                                      static_cast<sf::Uint8>(255 * (state.flashTimer / 0.25f))));
         window.draw(flash);
@@ -507,6 +594,19 @@ void Game::renderPause() {
     hud.draw(window, state.lives);
     window.draw(pauseOverlay);
     window.draw(textPause);
+    window.display();
+}
+
+void Game::renderFinalGameOver() {
+    window.clear();
+    window.setView(baseView);
+    window.draw(bgFar2);
+    window.draw(bgFar1);
+    window.draw(gamingBackground2);
+    window.draw(gamingBackground);
+    hud.draw(window, state.lives);
+    window.draw(finalGameOverMsg);
+    window.draw(finalGameOverHint);
     window.display();
 }
 
@@ -551,6 +651,14 @@ void Game::renderPlayer() {
     window.draw(player);
 }
 
+void Game::restartGame() {
+    state.lives = 5;
+    state.gameOverFinal = false;
+    hud.resetProgress();
+    canister.restart();
+    particles.clear();
+}
+
 void Game::setVictoryIfReached() {
     if (hud.progressX() >= hud.progressEnd() && !state.victoryPlayed) {
         hud.setProgressToEnd();
@@ -565,47 +673,4 @@ void Game::updateFuelGainText() {
         animTextClock.restart();
         hud.animateFuelGain(state.pusk);
     }
-}
-
-void Game::showFinalGameOver() {
-    window.clear();
-    window.setView(baseView);
-    window.draw(bgFar2);
-    window.draw(bgFar1);
-    window.draw(gamingBackground2);
-    window.draw(gamingBackground);
-    hud.draw(window, state.lives);
-
-    sf::Text finalMsg;
-    sf::Text hintMsg;
-    finalMsg.setFont(res.font);
-    finalMsg.setCharacterSize(80);
-    finalMsg.setFillColor(sf::Color::Red);
-    finalMsg.setString(L"GAME OVER");
-    finalMsg.setPosition(380.f, 280.f);
-    hintMsg.setFont(res.font);
-    hintMsg.setCharacterSize(30);
-    hintMsg.setFillColor(sf::Color::White);
-    hintMsg.setString(L"Press any key to restart");
-    hintMsg.setPosition(400.f, 380.f);
-    window.draw(finalMsg);
-    window.draw(hintMsg);
-    window.display();
-
-    bool waitKey = true;
-    sf::Event ev;
-    while (waitKey && window.isOpen()) {
-        while (window.pollEvent(ev)) {
-            if (ev.type == sf::Event::Closed) {
-                window.close();
-                return;
-            }
-            if (ev.type == sf::Event::KeyPressed)
-                waitKey = false;
-        }
-    }
-    state.lives = 5;
-    hud.resetProgress();
-    canister.restart();
-    particles.clear();
 }

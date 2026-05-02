@@ -26,7 +26,8 @@ private:
     void renderVictory();
     void renderPause();
     void renderPlayer();
-    void showFinalGameOver();
+    void renderFinalGameOver();
+    void restartGame();
     void initResources();
     void initWindowIcon();
     void initAudio();
@@ -65,6 +66,8 @@ private:
     sf::Text textPause;
     sf::Text winTitle;
     sf::Text winSub;
+    sf::Text finalGameOverMsg;
+    sf::Text finalGameOverHint;
 
     sf::Sprite player;
     sf::Sprite destruction;

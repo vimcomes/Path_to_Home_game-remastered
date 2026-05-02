@@ -1,14 +1,16 @@
 #include "Meteor.h"
+#include "GameState.h"
 #include "ResourcePaths.h"
-#include <cstdlib>
+#include <stdexcept>
 
 
 Meteor::Meteor()
 {
-	TextureObject.loadFromFile(resourcePath("images/asteroid.png"));
+	if (!TextureObject.loadFromFile(resourcePath("images/asteroid.png")))
+		throw std::runtime_error("Failed to load asteroid texture");
 	SpaceObject.setTexture(TextureObject);
 	SpaceObject.setTextureRect(sf::IntRect(262, 325, 55, 50));
-	restart(); // pick initial random spawn
+	restart();
 }
 
 Meteor::~Meteor()
@@ -18,10 +20,8 @@ Meteor::~Meteor()
 
 void Meteor::move(float delta)
 {
-	// drift left; respawn when off-screen to recycle objects
 	newborn = false;
-	const float meteorSpeed = 160.f;
-	SpaceObject.move(-meteorSpeed * delta,0);
+	SpaceObject.move(-game::constants::MeteorSpeed * delta, 0.f);
 	if (spinSpeed != 0.f) SpaceObject.rotate(spinSpeed * delta);
 	PosBonus = SpaceObject.getPosition();
 	if (SpaceObject.getPosition().x < -60) restart();
@@ -55,23 +55,21 @@ bool Meteor::collision(sf::FloatRect object)
 
 void Meteor::restart()
 {
-	// Respawn meteor to the right side with random scale and animation offsets
 	newborn = true;
-	// Смещаем распределение в сторону мелких объектов для разнообразия
-	int roll = rand() % 100;
+	int roll = game::randomInt(0, 99);
 	float s = 0.f;
-	if (roll < 55)      s = static_cast<float>(rand() % 12 + 6);   // мелкие
-	else if (roll < 85) s = static_cast<float>(rand() % 12 + 14);  // средние
-	else                s = static_cast<float>(rand() % 10 + 24);  // крупные
-	float x = static_cast<float>(rand() % 1280 + 1280);
-	float y = static_cast<float>(rand() % 540 + 130);
+	if (roll < 55)      s = static_cast<float>(game::randomInt(6, 17));
+	else if (roll < 85) s = static_cast<float>(game::randomInt(14, 25));
+	else                s = static_cast<float>(game::randomInt(24, 33));
+	float x = static_cast<float>(game::randomInt(1280, 2559));
+	float y = static_cast<float>(game::randomInt(130, 669));
 
 	SpaceObject.setPosition(sf::Vector2f(x, y));
 	SpaceObject.setScale(s/20, s/20);
-	ix = rand() % 4;
-	iy = rand() % 5;
-	st = 1 + rand() % 2;
-	spinSpeed = static_cast<float>((rand() % 121) - 60); // -60..60 deg/sec
+	ix = game::randomInt(0, 3);
+	iy = game::randomInt(0, 4);
+	st = 1 + game::randomInt(0, 1);
+	spinSpeed = game::randomFloat(-60.f, 60.f);
 	PosBonus = SpaceObject.getPosition();
 }
 

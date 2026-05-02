@@ -14,7 +14,6 @@ target_sources(path_to_home
         ${SRC_DIR}/Meteor.cpp
         ${SRC_DIR}/Fuel.cpp
         ${SRC_DIR}/ParticleSystem.cpp
-        ${SRC_DIR}/worklibgamer.cpp
         ${SRC_DIR}/Hud.cpp
         ${SRC_DIR}/ResourcePaths.cpp
         ${SRC_DIR}/Game.h
@@ -24,7 +23,6 @@ target_sources(path_to_home
         ${SRC_DIR}/ParticleSystem.h
         ${SRC_DIR}/Hud.h
         ${SRC_DIR}/ResourcePaths.h
-        ${SRC_DIR}/worklibgamer.h
 )
 target_include_directories(path_to_home PRIVATE ${SRC_DIR})
 target_compile_features(path_to_home PRIVATE cxx_std_20)

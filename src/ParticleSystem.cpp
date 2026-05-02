@@ -11,16 +11,12 @@ void ParticleSystem::emitFlash(const sf::Vector2f& position, float ttl) {
 }
 
 void ParticleSystem::update(float dt, const game::Config& cfg) {
-    for (auto it = smoke_.begin(); it != smoke_.end();) {
-        it->lifetime -= dt;
-        it->pos.x -= cfg.backgroundSpeed * dt * 0.5f;
-        it->pos.y -= 10.f * dt;
-        if (it->lifetime <= 0.f) {
-            it = smoke_.erase(it);
-        } else {
-            ++it;
-        }
+    for (auto& s : smoke_) {
+        s.lifetime -= dt;
+        s.pos.x -= cfg.backgroundSpeed * dt * 0.5f;
+        s.pos.y -= 10.f * dt;
     }
+    std::erase_if(smoke_, [](const SmokeParticle& s) { return s.lifetime <= 0.f; });
 
     std::erase_if(flashes_, [dt](PickupFlash& f) {
         f.lifetime -= dt;

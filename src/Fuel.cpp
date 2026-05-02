@@ -1,10 +1,11 @@
 #include "Fuel.h"
-#include <cstdlib>
+#include "GameState.h"
+#include <stdexcept>
 
 Fuel::Fuel(const sf::String& name, int x, int y)
 {
-	// Initialize texture and scale so the canister roughly matches meteor size
-	TextureObject.loadFromFile(name);
+	if (!TextureObject.loadFromFile(name))
+		throw std::runtime_error("Failed to load fuel texture");
 	SpaceObject.setTexture(TextureObject);
 	SpaceObject.setTextureRect(sf::IntRect(0, 0, x, y));
 	int scal = 1000 / x;
@@ -19,12 +20,11 @@ Fuel::~Fuel()
 
 void Fuel::restart()
 {
-	// Spawn fuel off-screen to the right at a random height
 	newborn = true;
-	type = (rand() % 100 < 35) ? BonusType::Shield : BonusType::Fuel; // 35% шанс щита
-	amount = (type == BonusType::Fuel) ? 10 + rand() % 81 : 0;
-	float x = static_cast<float>(rand() % 1280 + 1280);
-	float y = static_cast<float>(rand() % 540 + 130);
+	type = (game::randomInt(0, 99) < 35) ? BonusType::Shield : BonusType::Fuel;
+	amount = (type == BonusType::Fuel) ? 10 + game::randomInt(0, 80) : 0;
+	float x = static_cast<float>(game::randomInt(1280, 2559));
+	float y = static_cast<float>(game::randomInt(130, 669));
 
 	SpaceObject.setPosition(sf::Vector2f(x, y));
 	PosBonus = SpaceObject.getPosition();
@@ -32,12 +32,12 @@ void Fuel::restart()
 	if (type == BonusType::Shield)
 	{
 		SpaceObject.setColor(sf::Color(120, 240, 255, 240));
-		spinSpeed = static_cast<float>((rand() % 101) - 50);
+		spinSpeed = game::randomFloat(-50.f, 50.f);
 	}
 	else
 	{
 		SpaceObject.setColor(sf::Color::White);
-		spinSpeed = static_cast<float>((rand() % 121) - 60);
+		spinSpeed = game::randomFloat(-60.f, 60.f);
 	}
 }
 
