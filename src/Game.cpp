@@ -96,7 +96,7 @@ Game::Game()
     initWindowIcon();
     initAudio();
     loadConfig();
-    hud.initialize(res, cfg, state);
+    hud.initialize(res, state);
     initBackground();
     initPlayer();
     initTexts();
@@ -566,7 +566,6 @@ void Game::renderGameplay() {
         window.draw(flash);
     }
     window.display();
-    setVictoryIfReached();
 }
 
 void Game::renderVictory() {

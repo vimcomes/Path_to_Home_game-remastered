@@ -1,7 +1,7 @@
 #include "Hud.h"
 #include <algorithm>
 
-void Hud::initialize(const game::Resources& res, const game::Config&, const game::GameState& state) {
+void Hud::initialize(const game::Resources& res, const game::GameState& state) {
     gameInfoPanel = sf::RectangleShape(sf::Vector2f(1280.f, 113.f));
     gameInfoPanel.setTexture(&res.panel);
     gameInfoPanel.setPosition(sf::Vector2f(0.f, 0.f));

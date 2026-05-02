@@ -10,8 +10,7 @@ class Hud
 public:
     Hud() = default;
 
-    void initialize(const game::Resources& res, const game::Config& cfg,
-                    const game::GameState& state);
+    void initialize(const game::Resources& res, const game::GameState& state);
     void update(const game::GameState& state, const game::Config& cfg);
     void draw(sf::RenderTarget& target, int lives) const;
     void drawFuelGain(sf::RenderTarget& target, int pusk) const;
